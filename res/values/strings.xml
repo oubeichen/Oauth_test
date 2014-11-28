@@ -11,5 +11,6 @@
     <string name="default_log">Click buttons below to login</string>
     <string name="auth_type">Auth type:</string>
     <string name="auth_id">Auth id:</string>
+    <string name="auth_token">Auth token:</string>
 
 </resources>

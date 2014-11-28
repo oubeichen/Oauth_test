@@ -179,10 +179,12 @@ public class MainActivity extends FragmentActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_logout, container, false);
             TextView authType = (TextView)view.findViewById(R.id.auth_type);
+            TextView authToken = (TextView)view.findViewById(R.id.auth_token);
             VKRequest request = VKApi.users().get(VKParameters.from(VKApiConst.FIELDS,
                     "id,first_name,last_name"));
             if(VKSdk.isLoggedIn()){
                 authType.setText("Auth type: VK");
+                authToken.setText("Auth token: " + VKSdk.getAccessToken().accessToken);
                 new GetVKDetailsTask().execute(request);
             }
 
