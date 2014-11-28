@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">oauth_test_client</string>
+    <string name="hello_world">Login name:</string>
+    <string name="action_settings">Settings</string>
+    <string name="login_vk">VK</string>
+    <string name="login_apiok">APIOK</string>
+    <string name="logout">Logout</string>
+    <string name="check_token">Check Token</string>
+    <string name="default_log">Click buttons below to login</string>
+    <string name="auth_type">Auth type:</string>
+    <string name="auth_id">Auth id:</string>
+
+</resources>
