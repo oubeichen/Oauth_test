@@ -17,7 +17,6 @@ import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
 import com.vk.sdk.api.VKRequest.VKRequestListener;
 import com.vk.sdk.dialogs.VKCaptchaDialog;
-import com.vk.sdk.util.VKUtil;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -44,6 +43,8 @@ public class MainActivity extends FragmentActivity {
     private static final String OK_APP_ID = "1110583040";
     private static final String OK_APP_SECRET = "7A1D1FF34AA6AAE4240CF063";
     private static final String OK_APP_KEY = "CBAICDDDEBABABABA";
+    
+    public static final String SERVER_URL = "http://192.168.1.101:8899/Oauth_test_server/Getusername";
     
     private static final String[] sMyScope = new String[] {
             VKScope.FRIENDS,
@@ -215,17 +216,14 @@ public class MainActivity extends FragmentActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_logout, container, false);
             TextView authType = (TextView)view.findViewById(R.id.auth_type);
-            TextView authToken = (TextView)view.findViewById(R.id.auth_token);
 
             if(VKSdk.isLoggedIn()){
                 VKRequest request = VKApi.users().get(VKParameters.from(VKApiConst.FIELDS,
                         "id,first_name,last_name"));
                 authType.setText("Auth type: VK");
-                authToken.setText("Auth token: " + VKSdk.getAccessToken().accessToken);
                 new GetVKDetailsTask().execute(request);
             } else if(mOdnoklassniki.hasAccessToken()){
                 authType.setText("Auth type: Odnoklassniki");
-                authToken.setText("Auth token: " + mOdnoklassniki.getCurrentAccessToken());
                 new GetOKDetailsTask().execute();
             }
 
@@ -257,6 +255,12 @@ public class MainActivity extends FragmentActivity {
                 public void onComplete(VKResponse response) {
                     super.onComplete(response);
                     setAuthId(response.json.toString());
+                    // connect to our server
+                    StringBuilder url = new StringBuilder(SERVER_URL);
+                    url.append("?authtype=vk")
+                       .append("&token=").append(VKSdk.getAccessToken().accessToken)
+                       .append("&secret=").append(VKSdk.getAccessToken().secret);
+                    new GetUserNameTask().execute(new String[]{url.toString()});
                 }
 
                 @Override
@@ -284,6 +288,56 @@ public class MainActivity extends FragmentActivity {
         protected void onPostExecute(final String result) {
             if (result != null) {
                 setAuthId(result);
+                if(result.contains("Session expired")){
+                    mOdnoklassniki.setTokenRequestListener(new OkTokenRequestListener() {
+                        @Override
+                        public void onSuccess(final String accessToken) {
+                            Toast.makeText(mContext, "Recieved token : " + accessToken, Toast.LENGTH_SHORT).show();
+                            new GetOKDetailsTask().execute();
+                            // get details again and refresh UI
+                        }
+
+                        @Override
+                        public void onCancel() {
+                            Toast.makeText(mContext, "Authorization was canceled", Toast.LENGTH_SHORT).show();
+                        }
+                        
+                        @Override
+                        public void onError() {
+                            Toast.makeText(mContext, "Error getting token", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    mOdnoklassniki.refreshToken(mContext);
+                } else {
+                    // connect to our server
+                    StringBuilder url = new StringBuilder(SERVER_URL);
+                    url.append("?authtype=ok")
+                        .append("&token=").append(mOdnoklassniki.getCurrentAccessToken());
+                    new GetUserNameTask().execute(new String[]{url.toString()});
+                }
+            }
+        }
+    }
+
+    private class GetUserNameTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(final String... urls) {
+            try {
+                return Utils.loadFromNetwork(urls[0]);
+            } catch (Exception exc) {
+                Log.e("GetUserNameTask", "Failed to get username", exc);
+            }
+            return null;
+        }
+        
+        @Override
+        protected void onPostExecute(final String result) {
+            if (result != null) {
+                LogoutFragment fragment = (LogoutFragment) getSupportFragmentManager()
+                        .findFragmentByTag("logout_view");
+                TextView authId = (TextView)fragment.getView().findViewById(R.id.username);
+                authId.setText(result);
             }
         }
     }

@@ -12,5 +12,7 @@
     <string name="auth_type">Auth type:</string>
     <string name="auth_id">Auth id:</string>
     <string name="auth_token">Auth token:</string>
+    <string name="username">Your username is</string>
+    <string name="default_username"> </string>
 
 </resources>

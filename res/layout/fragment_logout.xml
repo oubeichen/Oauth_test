@@ -19,10 +19,17 @@
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
-        android:id="@+id/auth_token"
-        android:layout_width="fill_parent"
+        android:id="@+id/username_label"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/auth_token"
+        android:text="@string/username"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/default_username"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <Button
