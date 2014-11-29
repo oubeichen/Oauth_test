@@ -9,7 +9,7 @@
     tools:context="com.oubeichen.oauth_test_client.MainActivity" >
 
     <Button
-        android:id="@+id/button_apiok"
+        android:id="@+id/button_ok"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/button_vk"

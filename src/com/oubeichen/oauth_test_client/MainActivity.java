@@ -1,5 +1,9 @@
 package com.oubeichen.oauth_test_client;
 
+import ru.ok.android.sdk.Odnoklassniki;
+import ru.ok.android.sdk.OkTokenRequestListener;
+import ru.ok.android.sdk.util.OkScope;
+
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
@@ -15,9 +19,11 @@ import com.vk.sdk.api.VKRequest.VKRequestListener;
 import com.vk.sdk.dialogs.VKCaptchaDialog;
 import com.vk.sdk.util.VKUtil;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,8 +32,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity {
+    
+    protected final Context mContext = this;
+    
+    private static final String VK_APP_ID = "4654541";
+    
+    private static Odnoklassniki mOdnoklassniki;
+    private static final String OK_APP_ID = "1110583040";
+    private static final String OK_APP_SECRET = "7A1D1FF34AA6AAE4240CF063";
+    private static final String OK_APP_KEY = "CBAICDDDEBABABABA";
     
     private static final String[] sMyScope = new String[] {
             VKScope.FRIENDS,
@@ -42,16 +58,11 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         VKUIHelper.onCreate(this);
-        VKSdk.initialize(sdkListener, "4654541");
-        if (VKSdk.wakeUpSession()) {
-            showUserInfo();
-            return;
-        }
-
-        String[] fingerprint = VKUtil.getCertificateFingerprint(this, this.getPackageName());
-        Log.d("Fingerprint", fingerprint[0]);
+        VKSdk.initialize(vkSdkListener, VK_APP_ID);
+        
+        mOdnoklassniki = Odnoklassniki.createInstance(this, OK_APP_ID, OK_APP_SECRET, OK_APP_KEY);
+        mOdnoklassniki.setTokenRequestListener(okRequestListener);
     }
-
     private void showLogout() {
         getSupportFragmentManager()
                 .beginTransaction()
@@ -65,7 +76,7 @@ public class MainActivity extends FragmentActivity {
                 .commit();
     }
 
-    private final VKSdkListener sdkListener = new VKSdkListener() {
+    private final VKSdkListener vkSdkListener = new VKSdkListener() {
         @Override
         public void onCaptchaError(VKError captchaError) {
             new VKCaptchaDialog(captchaError).show();
@@ -91,6 +102,24 @@ public class MainActivity extends FragmentActivity {
         @Override
         public void onAcceptUserToken(VKAccessToken token) {
             showUserInfo();
+        }
+    };
+    
+    OkTokenRequestListener okRequestListener = new OkTokenRequestListener() {
+        @Override
+        public void onSuccess(final String accessToken) {
+            Toast.makeText(mContext, "Recieved token : " + accessToken, Toast.LENGTH_SHORT).show();
+            showUserInfo();
+        }
+
+        @Override
+        public void onCancel() {
+            Toast.makeText(mContext, "Authorization was canceled", Toast.LENGTH_SHORT).show();
+        }
+        
+        @Override
+        public void onError() {
+            Toast.makeText(mContext, "Error getting token", Toast.LENGTH_SHORT).show();
         }
     };
     
@@ -122,7 +151,7 @@ public class MainActivity extends FragmentActivity {
     protected void onResume() {
         super.onResume();
         VKUIHelper.onResume(this);
-        if (VKSdk.isLoggedIn()) {
+        if (VKSdk.isLoggedIn() || mOdnoklassniki.hasAccessToken()) {
             showLogout();
         } else {
             showLogin();
@@ -132,8 +161,9 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         VKUIHelper.onDestroy(this);
+        mOdnoklassniki.removeTokenRequestListener();
+        super.onDestroy();
     }
 
     @Override
@@ -149,7 +179,7 @@ public class MainActivity extends FragmentActivity {
         authId.setText("Auth details: " + string);
     }
 
-    public static class LoginFragment extends android.support.v4.app.Fragment {
+    public static class LoginFragment extends Fragment {
         public LoginFragment() {
             super();
         }
@@ -167,10 +197,16 @@ public class MainActivity extends FragmentActivity {
                     VKSdk.authorize(sMyScope, true, true);
                 }
             });
+            getView().findViewById(R.id.button_ok).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mOdnoklassniki.requestAuthorization(getActivity(), false, OkScope.VALUABLE_ACCESS);
+                }
+            });
         }
     }
 
-    public class LogoutFragment extends android.support.v4.app.Fragment {
+    public class LogoutFragment extends Fragment {
         public LogoutFragment() {
             super();
         }
@@ -180,12 +216,17 @@ public class MainActivity extends FragmentActivity {
             View view = inflater.inflate(R.layout.fragment_logout, container, false);
             TextView authType = (TextView)view.findViewById(R.id.auth_type);
             TextView authToken = (TextView)view.findViewById(R.id.auth_token);
-            VKRequest request = VKApi.users().get(VKParameters.from(VKApiConst.FIELDS,
-                    "id,first_name,last_name"));
+
             if(VKSdk.isLoggedIn()){
+                VKRequest request = VKApi.users().get(VKParameters.from(VKApiConst.FIELDS,
+                        "id,first_name,last_name"));
                 authType.setText("Auth type: VK");
                 authToken.setText("Auth token: " + VKSdk.getAccessToken().accessToken);
                 new GetVKDetailsTask().execute(request);
+            } else if(mOdnoklassniki.hasAccessToken()){
+                authType.setText("Auth type: OK");
+                authToken.setText("Auth token: " + mOdnoklassniki.getCurrentAccessToken());
+                new GetOKDetailsTask().execute();
             }
 
             return view;
@@ -199,7 +240,8 @@ public class MainActivity extends FragmentActivity {
                 @Override
                 public void onClick(View view) {
                     VKSdk.logout();
-                    if (!VKSdk.isLoggedIn()) {
+                    mOdnoklassniki.clearTokens(getActivity());
+                    if (!VKSdk.isLoggedIn() && !mOdnoklassniki.hasAccessToken()) {
                         ((MainActivity)getActivity()).showLogin();
                     }
                 }
@@ -223,6 +265,26 @@ public class MainActivity extends FragmentActivity {
                 }
             });
             return null;
+        }
+    }
+    
+    private class GetOKDetailsTask extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected String doInBackground(final Void... params) {
+            try {
+                return mOdnoklassniki.request("users.getCurrentUser", null, "get");
+            } catch (Exception exc) {
+                Log.e("Odnoklassniki", "Failed to get current user info", exc);
+            }
+            return null;
+        }
+        
+        @Override
+        protected void onPostExecute(final String result) {
+            if (result != null) {
+                setAuthId(result);
+            }
         }
     }
 }

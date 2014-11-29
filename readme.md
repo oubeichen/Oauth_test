@@ -9,3 +9,4 @@ https://vk.com/dev/standalone
 APIOK:
 
 http://apiok.ru/wiki/display/api/Odnoklassniki+Mobile+API
+http://apiok.ru/wiki/display/api/Android+application

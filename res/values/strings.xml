@@ -5,7 +5,7 @@
     <string name="hello_world">Login name:</string>
     <string name="action_settings">Settings</string>
     <string name="login_vk">VK</string>
-    <string name="login_apiok">APIOK</string>
+    <string name="login_apiok">OK</string>
     <string name="logout">Logout</string>
     <string name="check_token">Check Token</string>
     <string name="default_log">Click buttons below to login</string>
