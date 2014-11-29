@@ -17,7 +17,6 @@ import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
 import com.vk.sdk.api.VKRequest.VKRequestListener;
 import com.vk.sdk.dialogs.VKCaptchaDialog;
-import com.vk.sdk.util.VKUtil;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -48,7 +47,7 @@ public class MainActivity extends FragmentActivity {
     private static final String[] sMyScope = new String[] {
             VKScope.FRIENDS,
             VKScope.WALL,
-            VKScope.NOHTTPS
+            //VKScope.NOHTTPS
     };
     
     private final static String TAG = "MainActivity";
