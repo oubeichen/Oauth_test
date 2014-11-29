@@ -59,7 +59,7 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_main);
         VKUIHelper.onCreate(this);
         VKSdk.initialize(vkSdkListener, VK_APP_ID);
-        
+        VKSdk.wakeUpSession();
         mOdnoklassniki = Odnoklassniki.createInstance(this, OK_APP_ID, OK_APP_SECRET, OK_APP_KEY);
         mOdnoklassniki.setTokenRequestListener(okRequestListener);
     }
