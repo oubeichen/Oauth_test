@@ -41,9 +41,9 @@ public class MainActivity extends FragmentActivity {
     private static final String VK_APP_ID = "4654541";
     
     private static Odnoklassniki mOdnoklassniki;
-    private static final String OK_APP_ID = "1110583040";
-    private static final String OK_APP_SECRET = "7A1D1FF34AA6AAE4240CF063";
-    private static final String OK_APP_KEY = "CBAICDDDEBABABABA";
+    protected static final String OK_APP_ID = "125497344";
+    protected static final String OK_APP_SECRET = "E1B27795E3C2AF1A7B14CB11";
+    protected static final String OK_APP_KEY = "CBABPLHIABABABABA";
     
     private static final String[] sMyScope = new String[] {
             VKScope.FRIENDS,
@@ -224,7 +224,7 @@ public class MainActivity extends FragmentActivity {
                 authToken.setText("Auth token: " + VKSdk.getAccessToken().accessToken);
                 new GetVKDetailsTask().execute(request);
             } else if(mOdnoklassniki.hasAccessToken()){
-                authType.setText("Auth type: OK");
+                authType.setText("Auth type: Odnoklassniki");
                 authToken.setText("Auth token: " + mOdnoklassniki.getCurrentAccessToken());
                 new GetOKDetailsTask().execute();
             }
