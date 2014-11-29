@@ -41,9 +41,9 @@ public class MainActivity extends FragmentActivity {
     private static final String VK_APP_ID = "4654541";
     
     private static Odnoklassniki mOdnoklassniki;
-    protected static final String OK_APP_ID = "125497344";
-    protected static final String OK_APP_SECRET = "E1B27795E3C2AF1A7B14CB11";
-    protected static final String OK_APP_KEY = "CBABPLHIABABABABA";
+    private static final String OK_APP_ID = "1110583040";
+    private static final String OK_APP_SECRET = "7A1D1FF34AA6AAE4240CF063";
+    private static final String OK_APP_KEY = "CBAICDDDEBABABABA";
     
     private static final String[] sMyScope = new String[] {
             VKScope.FRIENDS,
